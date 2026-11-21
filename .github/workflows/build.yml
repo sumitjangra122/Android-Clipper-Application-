@@ -1,13 +1,15 @@
-name: Build APK
+name: Build APKs
 on:
   push:
   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      LICENSE_SECRET: ${{ secrets.LICENSE_SECRET }}
     steps:
       - uses: actions/checkout@v4
-      - run: unzip -q StreamClipperAndroid.zip
+      - run: unzip -q StreamClipperAndroid.zip && unzip -q KeyMaker.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -17,7 +19,13 @@ jobs:
           gradle-version: 8.9
       - run: gradle assembleDebug --stacktrace
         working-directory: StreamClipperAndroid
+      - run: gradle assembleDebug --stacktrace
+        working-directory: KeyMaker
       - uses: actions/upload-artifact@v4
         with:
-          name: StreamClipper-debug-apk
+          name: StreamClipper-apk
           path: StreamClipperAndroid/app/build/outputs/apk/debug/*.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KeyMaker-apk
+          path: KeyMaker/app/build/outputs/apk/debug/*.apk
